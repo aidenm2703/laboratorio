@@ -1,35 +1,40 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
- <meta charset="UTF-8" />
- <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <title>PokéTasks ✨</title>
- <link rel="stylesheet" href="style.css" />
+ <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
- <div class="container">
+ <div class="bg-grid"></div>
+ <div class="stars-container" id="starsContainer"></div>
+ <div class="shooting-stars" id="shootingStarsContainer"></div>
 
- <h1>⚡ PokéTasks</h1>
- <p class="subtitle">Atrapa tus tareas, una a una 🎯</p>
+ <main class="glass-container">
+ <h1 class="title">⚡ PokéTasks <span class="title-sparkle">✨</span></h1>
+ <p class="subtitle">¡Atrapa tus tareas como un Entrenador Pokémon!</p>
 
- <form class="task-form" id="taskForm">
- <input
- type="text"
- id="taskInput"
- placeholder="Escribe una tarea…"
- autocomplete="off"
- required
- />
- <button type="submit">➕ Agregar</button>
+ <form id="taskForm" class="task-form">
+ <input type="text" id="taskInput" placeholder="¿Qué tarea vas a capturar? 🎯" autocomplete="off" required>
+ <button type="submit" class="btn-add">➕ Agregar</button>
  </form>
 
- <ul class="task-list" id="taskList">
-
- </ul>
-
- <p class="empty-msg" id="emptyMsg">✨ No hay tareas aún. ¡Agrega la primera!</p>
-
+ <div class="filters">
+ <button class="filter-btn active" data-filter="all">🌐 Todas</button>
+ <button class="filter-btn" data-filter="pending">⏳ Pendientes</button>
+ <button class="filter-btn" data-filter="completed">✅ Completadas</button>
  </div>
 
- <script
+ <ul id="taskList" class="task-list"></ul>
+
+ <div class="stats">
+ <span id="totalTasks">Total: 0</span>
+ <span id="completedTasks">Completadas: 0</span>
+ </div>
+ </main>
+
+ <script src="script.js"></script>
+</body>
+</html>
