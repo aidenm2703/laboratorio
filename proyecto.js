@@ -1,5 +1,5 @@
 /* ============================================
- PokéTasks ✨ - JavaScript Completo
+ PokéTasks ✨ - Párrafo 2: Formulario y Lógica
  ============================================ */
 
 // ============================================
@@ -24,7 +24,6 @@ let currentFilter = 'all';
 function createShootingStars() {
  const container = document.getElementById('shootingStarsContainer');
  if (!container) return;
-
  for (let i = 0; i < 4; i++) {
  const star = document.createElement('div');
  star.className = 'shooting-star';
@@ -42,9 +41,7 @@ function createShootingStars() {
 function createParticles() {
  const container = document.getElementById('starsContainer');
  if (!container) return;
-
  const colors = '#00f5ff', '#ff00e6', '#ffe600', '#ff6b6b', '#48dbfb';
-
  for (let i = 0; i < 50; i++) {
  const particle = document.createElement('div');
  particle.className = 'particle';
@@ -93,36 +90,61 @@ function renderTasks() {
 : '📭 No hay tareas completadas aún.';
  taskList.appendChild(emptyMsg);
  } else {
- filteredTasks.forEach((task, index) => {
- const li = document.createElement('li');
- li.className = `task-item ${task.completed? 'completed': ''}`;
-
- // Checkbox
- const checkbox = document.createElement('input');
- checkbox.type = 'checkbox';
- checkbox.className = 'task-checkbox';
- checkbox.checked = task.completed;
- checkbox.addEventListener('change', () => toggleTask(task.id));
-
- // Texto
- const span = document.createElement('span');
- span.className = 'task-text';
- span.textContent = task.text;
-
- // Botón eliminar
- const deleteBtn = document.createElement('button');
- deleteBtn.className = 'task-delete';
- deleteBtn.textContent = '✖';
- deleteBtn.addEventListener('click', () => deleteTask(task.id));
-
- li.appendChild(checkbox);
- li.appendChild(span);
- li.appendChild(deleteBtn);
+ filteredTasks.forEach((task) => {
+ const li = createTaskElement(task);
  taskList.appendChild(li);
  });
  }
 
  updateStats();
+}
+
+// ============================================
+// 🏗️ CREAR ELEMENTO DE TAREA (con fadeOut)
+// ============================================
+function createTaskElement(task) {
+ const li = document.createElement('li');
+ li.className = `task-item ${task.completed? 'completed': ''}`;
+
+ // 🏀 Checkbox tipo Pokéball (circular)
+ const checkbox = document.createElement('input');
+ checkbox.type = 'checkbox';
+ checkbox.className = 'task-checkbox pokeball-checkbox';
+ checkbox.checked = task.completed;
+ checkbox.addEventListener('change', () => toggleTask(task.id));
+
+ // 📝 Texto de la tarea
+ const span = document.createElement('span');
+ span.className = 'task-text';
+ span.textContent = task.text;
+
+ // ✕ Botón eliminar con fadeOut
+ const deleteBtn = document.createElement('button');
+ deleteBtn.className = 'task-delete';
+ deleteBtn.textContent = '✕';
+ deleteBtn.addEventListener('click', () => deleteTaskWithAnimation(task.id, li));
+
+ li.appendChild(checkbox);
+ li.appendChild(span);
+ li.appendChild(deleteBtn);
+ return li;
+}
+
+// ============================================
+// 🗑️ ELIMINAR CON ANIMACIÓN FADEOUT
+// ============================================
+function deleteTaskWithAnimation(id, liElement) {
+ // 🎬 Animación fadeOut
+ liElement.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+ liElement.style.opacity = '0';
+ liElement.style.transform = 'translateX(30px) scale(0.9)';
+
+ // ⏳ Esperar a que termine la animación antes de borrar del array
+ setTimeout(() => {
+ tasks = tasks.filter(t => t.id!== id);
+ saveTasks();
+ renderTasks();
+ }, 400);
 }
 
 // ============================================
@@ -136,7 +158,7 @@ function updateStats() {
 }
 
 // ============================================
-// ➕ AGREGAR TAREA
+// ➕ AGREGAR TAREA (con validación visual)
 // ============================================
 function addTask(text) {
  const newTask = {
@@ -152,6 +174,41 @@ function addTask(text) {
 }
 
 // ============================================
+// ✅ VALIDACIÓN CON FEEDBACK VISUAL ROJO
+// ============================================
+function validateInput() {
+ const value = taskInput.value.trim();
+
+ if (!value) {
+ // 🚫 Feedback visual rojo
+ taskInput.style.borderColor = '#ff3366';
+ taskInput.style.boxShadow = '0 0 18px rgba(255, 51, 102, 0.4)';
+ taskInput.style.backgroundColor = 'rgba(255, 51, 102, 0.08)';
+ taskInput.placeholder = '⚠️ ¡Escribe algo primero!';
+
+ // ❤️ Vibración sutil (opcional, no rompe nada si no hay soporte)
+ taskInput.style.animation = 'shake 0.3s ease';
+ setTimeout(() => { taskInput.style.animation = ''; }, 300);
+
+ return false;
+ }
+
+ // ✅ Resetear estilo si es válido
+ resetInputStyle();
+ return true;
+}
+
+// ============================================
+// 🔄 RESETEAR ESTILO DEL INPUT
+// ============================================
+function resetInputStyle() {
+ taskInput.style.borderColor = 'rgba(0, 245, 255, 0.25)';
+ taskInput.style.boxShadow = 'none';
+ taskInput.style.backgroundColor = 'rgba(255, 255, 255, 0.06)';
+ taskInput.placeholder = '¿Qué tarea vas a capturar? 🎯';
+}
+
+// ============================================
 // ✅ TOGGLE TAREA
 // ============================================
 function toggleTask(id) {
@@ -161,15 +218,6 @@ function toggleTask(id) {
  saveTasks();
  renderTasks();
  }
-}
-
-// ============================================
-// 🗑️ ELIMINAR TAREA
-// ============================================
-function deleteTask(id) {
- tasks = tasks.filter(t => t.id!== id);
- saveTasks();
- renderTasks();
 }
 
 // ============================================
@@ -184,17 +232,33 @@ function setFilter(filter) {
 }
 
 // ============================================
-// 🎧 EVENTOS
+// 🎧 EVENTOS DEL FORMULARIO
 // ============================================
 
-// Formulario
+// 📤 Submit: clic en botón o Enter
 taskForm.addEventListener('submit', (e) => {
  e.preventDefault();
+
+ if (!validateInput()) return; // 🛑 Validación con feedback rojo
+
  const text = taskInput.value.trim();
- if (text) {
  addTask(text);
  taskInput.value = '';
+ resetInputStyle();
  taskInput.focus();
+});
+
+// 🔄 Restaurar estilo al escribir (quita el rojo)
+taskInput.addEventListener('input', () => {
+ if (taskInput.value.trim()) {
+ resetInputStyle();
+ }
+});
+
+// 🔄 También al hacer focus
+taskInput.addEventListener('focus', () => {
+ if (taskInput.value.trim()) {
+ resetInputStyle();
  }
 });
 

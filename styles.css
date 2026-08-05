@@ -1,276 +1,60 @@
 /* ============================================
- PokéTasks ✨ - Estilo Retro-Futurista Pokémon
+ 🏀 CHECKBOX TIPO POKÉBALL (circular)
  ============================================ */
-
-/* 🔄 Reset & Base */
-*, *::before, *::after {
- margin: 0;
- padding: 0;
- box-sizing: border-box;
-}
-
-:root {
- --neon-cyan: #00f5ff;
- --neon-magenta: #ff00e6;
- --neon-yellow: #ffe600;
- --glass-bg: rgba(10, 10, 30, 0.55);
- --glass-border: rgba(255, 255, 255, 0.12);
- --glass-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
- --text-primary: #f0f0ff;
- --text-secondary: #b0b0d0;
- --radius: 24px;
-}
-
-body {
- min-height: 100vh;
- display: flex;
- justify-content: center;
- align-items: center;
- font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
- background: #0a0a1a;
- color: var(--text-primary);
- overflow-x: hidden;
- padding: 1.5rem;
-}
-
-/* ============================================
- 🌌 FONDO: Grid animado de batalla Pokémon
- ============================================ */
-.bg-grid {
- position: fixed;
- inset: 0;
- z-index: 0;
- background-image:
- linear-gradient(rgba(0, 245, 255, 0.08) 1px, transparent 1px),
- linear-gradient(90deg, rgba(0, 245, 255, 0.08) 1px, transparent 1px);
- background-size: 60px 60px;
- animation: gridPulse 4s ease-in-out infinite alternate;
- perspective: 600px;
-}
-
-@keyframes gridPulse {
- 0% {
- opacity: 0.5;
- transform: scale(1) rotateX(0deg);
- filter: hue-rotate(0deg);
- }
- 50% {
- opacity: 0.9;
- transform: scale(1.02) rotateX(2deg);
- filter: hue-rotate(15deg);
- }
- 100% {
- opacity: 0.6;
- transform: scale(0.98) rotateX(-1deg);
- filter: hue-rotate(340deg);
- }
-}
-
-/* ============================================
- 🌠 ESTRELLAS FUGACES
- ============================================ */
-.shooting-stars {
- position: fixed;
- inset: 0;
- z-index: 1;
- pointer-events: none;
- overflow: hidden;
-}
-
-.shooting-star {
- position: absolute;
- width: 3px;
- height: 3px;
- background: var(--neon-cyan);
+.pokeball-checkbox {
+ appearance: none;
+ -webkit-appearance: none;
+ width: 28px;
+ height: 28px;
+ border: 2px solid var(--neon-cyan);
  border-radius: 50%;
- box-shadow: 0 0 6px 2px var(--neon-cyan), 0 0 20px 6px rgba(0, 245, 255, 0.3);
- animation: shoot linear infinite;
+ background: rgba(0, 0, 0, 0.3);
+ cursor: pointer;
+ position: relative;
+ transition: all 0.3s ease;
+ flex-shrink: 0;
 }
 
-.shooting-star::after {
+.pokeball-checkbox::before {
  content: '';
  position: absolute;
  top: 50%;
- transform: translateY(-50%);
- width: 80px;
- height: 1px;
- background: linear-gradient(to left, var(--neon-cyan), transparent);
- right: 100%;
-}
-
-@keyframes shoot {
- 0% {
- transform: translate(0, 0) rotate(-35deg);
- opacity: 1;
- }
- 70% {
- opacity: 1;
- }
- 100% {
- transform: translate(-600px, 400px) rotate(-35deg);
- opacity: 0;
- }
-}
-
-/* ============================================
- ✨ PARTÍCULAS FLOTANTES
- ============================================ */
-.stars-container {
- position: fixed;
- inset: 0;
- z-index: 1;
- pointer-events: none;
- overflow: hidden;
-}
-
-.particle {
- position: absolute;
+ left: 50%;
+ transform: translate(-50%, -50%);
+ width: 10px;
+ height: 10px;
  border-radius: 50%;
- animation: floatParticle linear infinite;
- opacity: 0.6;
-}
-
-@keyframes floatParticle {
- 0% {
- transform: translateY(100vh) scale(0) rotate(0deg);
- opacity: 0;
- }
- 10% {
- opacity: 0.8;
- }
- 90% {
- opacity: 0.6;
- }
- 100% {
- transform: translateY(-10vh) scale(1.2) rotate(720deg);
- opacity: 0;
- }
-}
-
-/* ============================================
- 🧊 CONTENEDOR GLASSMORPHISM
- ============================================ */
-.glass-container {
- position: relative;
- z-index: 10;
- width: 100%;
- max-width: 580px;
- background: var(--glass-bg);
- backdrop-filter: blur(18px) saturate(1.4);
- -webkit-backdrop-filter: blur(18px) saturate(1.4);
- border: 1px solid var(--glass-border);
- border-radius: var(--radius);
- padding: 2.5rem 2rem;
- box-shadow: var(--glass-shadow), 0 0 30px rgba(0, 245, 255, 0.08);
- transition: box-shadow 0.3s ease;
-}
-
-.glass-container:hover {
- box-shadow: var(--glass-shadow), 0 0 50px rgba(255, 0, 230, 0.12);
-}
-
-/* ============================================
- 🏆 TÍTULO
- ============================================ */
-.title {
- font-size: 2.6rem;
- font-weight: 800;
- text-align: center;
- background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta), var(--neon-yellow));
- -webkit-background-clip: text;
- background-clip: text;
- color: transparent;
- letter-spacing: 2px;
- text-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
- margin-bottom: 0.25rem;
-}
-
-.title-sparkle {
- display: inline-block;
- animation: sparkle 1.5s ease-in-out infinite;
-}
-
-@keyframes sparkle {
- 0%, 100% { opacity: 1; transform: scale(1); }
- 50% { opacity: 0.4; transform: scale(1.3) rotate(15deg); }
-}
-
-.subtitle {
- text-align: center;
- color: var(--text-secondary);
- font-size: 0.95rem;
- margin-bottom: 1.8rem;
- font-style: italic;
-}
-
-/* ============================================
- ➕ FORMULARIO
- ============================================ */
-.task-form {
- display: flex;
- gap: 0.75rem;
- margin-bottom: 1.5rem;
-}
-
-.task-form input {
- flex: 1;
- padding: 0.85rem 1.2rem;
- border: 1px solid rgba(0, 245, 255, 0.25);
- border-radius: 14px;
- background: rgba(255, 255, 255, 0.06);
- color: var(--text-primary);
- font-size: 1rem;
- outline: none;
- transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.task-form input::placeholder {
- color: rgba(255, 255, 255, 0.35);
-}
-
-.task-form input:focus {
- border-color: var(--neon-cyan);
- box-shadow: 0 0 18px rgba(0, 245, 255, 0.2);
-}
-
-.btn-add {
- padding: 0.85rem 1.5rem;
- border: none;
- border-radius: 14px;
- background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
- color: #0a0a1a;
- font-weight: 700;
- font-size: 1rem;
- cursor: pointer;
- transition: transform 0.2s, box-shadow 0.3s;
- white-space: nowrap;
-}
-
-.btn-add:hover {
- transform: scale(1.05);
- box-shadow: 0 0 25px rgba(0, 245, 255, 0.4);
-}
-
-.btn-add:active {
- transform: scale(0.95);
-}
-
-/* ============================================
- 🔍 FILTROS
- ============================================ */
-.filters {
- display: flex;
- gap: 0.5rem;
- margin-bottom: 1.5rem;
- flex-wrap: wrap;
-}
-
-.filter-btn {
- padding: 0.5rem 1.2rem;
- border: 1px solid rgba(255, 255, 255, 0.1);
- border-radius: 30px;
  background: transparent;
- color: var(--text-secondary);
- font-size: 0.85rem;
- font-weight: 600;
- cursor: pointer
+ border: 2px solid rgba(255, 255, 255, 0.2);
+ transition: all 0.3s ease;
+}
+
+.pokeball-checkbox:checked {
+ border-color: var(--neon-yellow);
+ background: radial-gradient(circle, #ff3366 40%, #cc0033 60%, #990022 100%);
+ box-shadow: 0 0 12px rgba(255, 51, 102, 0.5), inset 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+.pokeball-checkbox:checked::before {
+ background: white;
+ border-color: white;
+ box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+ width: 6px;
+ height: 6px;
+}
+
+.pokeball-checkbox:hover {
+ transform: scale(1.15);
+ border-color: var(--neon-magenta);
+}
+
+/* ============================================
+ 💥 ANIMACIÓN DE SHAKE (para input inválido)
+ ============================================ */
+@keyframes shake {
+ 0%, 100% { transform: translateX(0); }
+ 20% { transform: translateX(-6px); }
+ 40% { transform: translateX(6px); }
+ 60% { transform: translateX(-4px); }
+ 80% { transform: translateX(4px); }
+}
