@@ -1,205 +1,124 @@
 /* ========================================
- PokéTasks ✨ - Estilo completo
- Fondo interactivo tipo videojuego
+ FORMULARIO Y LISTA DE TAREAS
  ======================================== */
 
-/* --- RESET & BASE --- */
-* {
- margin: 0;
- padding: 0;
- box-sizing: border-box;
- font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-}
-
-html, body {
- width: 100%;
- min-height: 100vh;
- overflow-x: hidden;
-}
-
-body {
- position: relative;
+/* --- FORMULARIO --- */
+.task-form {
  display: flex;
- justify-content: center;
+ gap: 0.5rem;
+ margin-bottom: 1.5rem;
+}
+
+.task-form input {
+ flex: 1;
+ padding: 0.8rem 1rem;
+ border: 2px solid rgba(0, 255, 255, 0.2);
+ border-radius: 1rem;
+ background: rgba(0, 0, 0, 0.4);
+ color: #e2e8f0;
+ font-size: 0.95rem;
+ outline: none;
+ transition: border 0.3s, box-shadow 0.3s, background 0.3s;
+}
+
+.task-form input::placeholder {
+ color: rgba(255, 255, 255, 0.3);
+}
+
+.task-form input:focus {
+ border-color: #00ffff;
+ box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+ background: rgba(0, 0, 0, 0.6);
+}
+
+.task-form button {
+ padding: 0.8rem 1.4rem;
+ border: none;
+ border-radius: 1rem;
+ background: linear-gradient(135deg, #00ffff, #ff00ff);
+ color: #0a0a1a;
+ font-weight: 700;
+ font-size: 0.95rem;
+ cursor: pointer;
+ transition: transform 0.2s, box-shadow 0.3s;
+ white-space: nowrap;
+ text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+.task-form button:hover {
+ transform: scale(1.05);
+ box-shadow: 0 0 25px rgba(0, 255, 255, 0.4);
+}
+
+.task-form button:active {
+ transform: scale(0.95);
+}
+
+/* --- LISTA DE TAREAS --- */
+.task-list {
+ list-style: none;
+ display: flex;
+ flex-direction: column;
+ gap: 0.6rem;
+ max-height: 350px;
+ overflow-y: auto;
+ padding-right: 0.25rem;
+}
+
+.task-list::-webkit-scrollbar {
+ width: 4px;
+}
+
+.task-list::-webkit-scrollbar-thumb {
+ background: rgba(0, 255, 255, 0.3);
+ border-radius: 999px;
+}
+
+/* --- CADA TAREA INDIVIDUAL --- */
+.task-item {
+ display: flex;
  align-items: center;
- padding: 1.5rem;
-
- /* === FONDO PRINCIPAL OSCURO === */
- background: #0a0a1a;
-
- /* === CAPA DE GRID ANIMADO (CUADRÍCULA RETRO-FUTURISTA) === */
- background-image:
- /* Líneas verticales del grid */
- linear-gradient(
- 90deg,
- rgba(0, 255, 255, 0.07) 1px,
- transparent 1px
- ),
- /* Líneas horizontales del grid */
- linear-gradient(
- 180deg,
- rgba(0, 255, 255, 0.07) 1px,
- transparent 1px
- ),
- /* Brillo neón difuso en el centro */
- radial-gradient(
- ellipse at 50% 50%,
- rgba(0, 255, 255, 0.05) 0%,
- transparent 70%
- );
-
- /* Tamaño de cada celda del grid */
- background-size:
- 60px 60px, /* vertical */
- 60px 60px, /* horizontal */
- 100% 100%; /* radial */
-
- /* === ANIMACIÓN DEL GRID (se mueve lentamente) === */
- animation: gridMove 12s linear infinite;
-
- /* === CAPA DE ESTRELLAS FUGACES (pseudoelemento) === */
- /* Las estrellas van en un::before */
+ gap: 0.7rem;
+ background: rgba(255, 255, 255, 0.04);
+ padding: 0.7rem 0.8rem 0.7rem 1rem;
+ border-radius: 1rem;
+ border: 1px solid rgba(0, 255, 255, 0.08);
+ transition: background 0.3s, border-color 0.3s, transform 0.2s;
+ animation: taskAppear 0.3s ease-out;
 }
 
-/* --- ANIMACIÓN DEL GRID --- */
-@keyframes gridMove {
+.task-item:hover {
+ background: rgba(255, 255, 255, 0.08);
+ border-color: rgba(0, 255, 255, 0.2);
+ transform: translateX(4px);
+}
+
+/* Animación de entrada para nuevas tareas */
+@keyframes taskAppear {
  0% {
- background-position:
- 0 0, /* vertical */
- 0 0, /* horizontal */
- 0 0; /* radial */
- }
- 100% {
- background-position:
- 60px 0, /* vertical - se desplaza una celda */
- 0 60px, /* horizontal - se desplaza una celda */
- 0 0; /* radial - quieto */
- }
-}
-
-/* --- CAPA DE ESTRELLAS FUGACES --- */
-body::before {
- content: '';
- position: fixed;
- top: 0;
- left: 0;
- width: 100%;
- height: 100%;
- pointer-events: none; /* No interfiere con clics */
- z-index: 0;
-
- /* Múltiples estrellas fugaces con box-shadow */
- background: transparent;
-
- /* Estrella 1 */
- box-shadow:
- 10vw 20vh 2px 0 rgba(255, 255, 255, 0.6),
- 30vw 50vh 1px 0 rgba(0, 255, 255, 0.5),
- 60vw 10vh 3px 0 rgba(255, 0, 255, 0.4),
- 80vw 70vh 1px 0 rgba(255, 255, 0, 0.5),
- 20vw 80vh 2px 0 rgba(0, 255, 255, 0.3),
- 70vw 30vh 1px 0 rgba(255, 255, 255, 0.7),
- 90vw 90vh 2px 0 rgba(255, 0, 255, 0.3),
- 40vw 40vh 1px 0 rgba(0, 255, 255, 0.6);
-
- animation: starsTwinkle 3s ease-in-out infinite alternate;
-}
-
-@keyframes starsTwinkle {
- 0% {
- opacity: 0.4;
- transform: translateY(0);
+ opacity: 0;
+ transform: translateY(-10px) scale(0.95);
  }
  100% {
  opacity: 1;
- transform: translateY(-5px);
+ transform: translateY(0) scale(1);
  }
 }
 
-/* --- CAPA DE PARTÍCULAS FLOTANTES (pseudoelemento after) --- */
-body::after {
- content: '';
- position: fixed;
- top: 0;
- left: 0;
- width: 100%;
- height: 100%;
- pointer-events: none;
- z-index: 0;
-
- /* Partículas tipo neón */
- background-image:
- radial-gradient(circle at 15% 30%, rgba(0, 255, 255, 0.15) 0%, transparent 50%),
- radial-gradient(circle at 85% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
- radial-gradient(circle at 50% 80%, rgba(255, 255, 0, 0.08) 0%, transparent 50%),
- radial-gradient(circle at 25% 70%, rgba(0, 255, 255, 0.12) 0%, transparent 50%),
- radial-gradient(circle at 75% 60%, rgba(255, 0, 255, 0.08) 0%, transparent 50%);
-
- animation: particlesFloat 8s ease-in-out infinite alternate;
+/* --- TEXTO DE LA TAREA --- */
+.task-item.task-text {
+ flex: 1;
+ color: #e2e8f0;
+ font-size: 0.9rem;
+ word-break: break-word;
+ transition: color 0.3s;
 }
 
-@keyframes particlesFloat {
- 0% {
- transform: scale(1) rotate(0deg);
- opacity: 0.6;
- }
- 50% {
- transform: scale(1.05) rotate(2deg);
- opacity: 0.9;
- }
- 100% {
- transform: scale(1) rotate(-2deg);
- opacity: 0.6;
- }
-}
-
-/* --- TARJETA PRINCIPAL (glassmorphism) --- */
-.container {
- position: relative;
- z-index: 1; /* Por encima del fondo */
-
- background: rgba(10, 10, 30, 0.75);
- backdrop-filter: blur(16px);
- -webkit-backdrop-filter: blur(16px);
- border: 1px solid rgba(0, 255, 255, 0.2);
- border-radius: 2rem;
- padding: 2rem 1.8rem;
- width: 100%;
- max-width: 500px;
- box-shadow:
- 0 25px 50px -12px rgba(0, 0, 0, 0.9),
- 0 0 30px rgba(0, 255, 255, 0.08),
- inset 0 0 30px rgba(0, 255, 255, 0.03);
-
- transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.container:hover {
- box-shadow:
- 0 25px 50px -12px rgba(0, 0, 0, 0.9),
- 0 0 40px rgba(0, 255, 255, 0.15),
- inset 0 0 30px rgba(0, 255, 255, 0.05);
-}
-
-/* --- TÍTULO --- */
-h1 {
- font-size: 2rem;
- font-weight: 800;
+/* --- MENSAJE VACÍO --- */
+.empty-msg {
  text-align: center;
- margin-bottom: 0.25rem;
- letter-spacing: -0.02em;
-
- background: linear-gradient(135deg, #00ffff, #ff00ff);
- -webkit-background-clip: text;
- -webkit-text-fill-color: transparent;
- background-clip: text;
-
- text-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
-}
-
-.subtitle {
- text-align: center;
- color: rgba(255, 255, 255, 0.5);
- font-size: 0.85rem;
- margin-bottom: 1.5rem;
+ color: rgba(255, 255, 255, 0.3);
+ padding: 2rem 0;
+ font-size: 0.9rem;
+ font-style: italic;
 }
