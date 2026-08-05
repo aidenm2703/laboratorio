@@ -21,14 +21,28 @@
     <p class="subtitle">¡Atrapa tus tareas como un Entrenador Pokémon!</p>
     <form id="taskForm" class="task-form">
       <input type="text" id="taskInput" placeholder="¿Qué tarea vas a capturar?" autocomplete="off" aria-label="Nueva tarea">
+      <select id="priorityInput" aria-label="Prioridad de la tarea">
+        <option value="medium">Prioridad media</option>
+        <option value="high">Prioridad alta</option>
+        <option value="low">Prioridad baja</option>
+      </select>
       <button type="submit" class="btn-add">Agregar</button>
     </form>
+    <section class="progress-section" aria-label="Progreso de tareas">
+      <div class="progress-heading"><strong>Progreso del entrenador</strong><span id="progressPercentage">0%</span></div>
+      <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="progressBar" class="progress-bar"></div></div>
+      <span id="progressLabel" class="progress-label">Completa una tarea para comenzar.</span>
+    </section>
     <div class="filters" aria-label="Filtros de tareas">
       <button type="button" class="filter-btn active" data-filter="all">Todas</button>
       <button type="button" class="filter-btn" data-filter="pending">Pendientes</button>
       <button type="button" class="filter-btn" data-filter="completed">Completadas</button>
     </div>
     <ul id="taskList" class="task-list" aria-live="polite"></ul>
+    <section class="insights" aria-label="Resumen semanal">
+      <article class="insight-card streak-card"><span class="insight-icon">🔥</span><div><strong><span id="streakDays">0</span> días de racha</strong><small>Completa al menos una tarea cada día.</small></div></article>
+      <article class="insight-card achievement-card"><span class="insight-icon">🏆</span><div><strong>Logro destacado</strong><p id="weeklyAchievement">Tu aventura comienza hoy.</p></div></article>
+    </section>
     <div class="stats">
       <span id="totalTasks">Total: 0</span>
       <span id="completedTasks">Completadas: 0</span>
