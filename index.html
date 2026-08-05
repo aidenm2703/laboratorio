@@ -1,40 +1,34 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>PokéTasks ✨</title>
- <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Organiza tus tareas con PokéTasks.">
+  <title>PokéTasks ✨</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
- <div class="bg-grid"></div>
- <div class="stars-container" id="starsContainer"></div>
- <div class="shooting-stars" id="shootingStarsContainer"></div>
-
- <main class="glass-container">
- <h1 class="title">⚡ PokéTasks <span class="title-sparkle">✨</span></h1>
- <p class="subtitle">¡Atrapa tus tareas como un Entrenador Pokémon!</p>
-
- <form id="taskForm" class="task-form">
- <input type="text" id="taskInput" placeholder="¿Qué tarea vas a capturar? 🎯" autocomplete="off" required>
- <button type="submit" class="btn-add">➕ Agregar</button>
- </form>
-
- <div class="filters">
- <button class="filter-btn active" data-filter="all">🌐 Todas</button>
- <button class="filter-btn" data-filter="pending">⏳ Pendientes</button>
- <button class="filter-btn" data-filter="completed">✅ Completadas</button>
- </div>
-
- <ul id="taskList" class="task-list"></ul>
-
- <div class="stats">
- <span id="totalTasks">Total: 0</span>
- <span id="completedTasks">Completadas: 0</span>
- </div>
- </main>
-
- <script src="proyecto.js"></script>
+  <div class="bg-grid"></div>
+  <div class="stars-container" id="starsContainer"></div>
+  <div class="shooting-stars" id="shootingStarsContainer"></div>
+  <main class="glass-container">
+    <h1 class="title">⚡ PokéTasks <span class="title-sparkle">✨</span></h1>
+    <p class="subtitle">¡Atrapa tus tareas como un Entrenador Pokémon!</p>
+    <form id="taskForm" class="task-form">
+      <input type="text" id="taskInput" placeholder="¿Qué tarea vas a capturar?" autocomplete="off" aria-label="Nueva tarea">
+      <button type="submit" class="btn-add">Agregar</button>
+    </form>
+    <div class="filters" aria-label="Filtros de tareas">
+      <button type="button" class="filter-btn active" data-filter="all">Todas</button>
+      <button type="button" class="filter-btn" data-filter="pending">Pendientes</button>
+      <button type="button" class="filter-btn" data-filter="completed">Completadas</button>
+    </div>
+    <ul id="taskList" class="task-list" aria-live="polite"></ul>
+    <div class="stats">
+      <span id="totalTasks">Total: 0</span>
+      <span id="completedTasks">Completadas: 0</span>
+    </div>
+  </main>
+  <script src="proyecto.js"></script>
 </body>
 </html>

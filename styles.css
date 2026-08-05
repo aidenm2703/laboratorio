@@ -1,60 +1,10 @@
-/* ============================================
- 🏀 CHECKBOX TIPO POKÉBALL (circular)
- ============================================ */
-.pokeball-checkbox {
- appearance: none;
- -webkit-appearance: none;
- width: 28px;
- height: 28px;
- border: 2px solid var(--neon-cyan);
- border-radius: 50%;
- background: rgba(0, 0, 0, 0.3);
- cursor: pointer;
- position: relative;
- transition: all 0.3s ease;
- flex-shrink: 0;
-}
-
-.pokeball-checkbox::before {
- content: '';
- position: absolute;
- top: 50%;
- left: 50%;
- transform: translate(-50%, -50%);
- width: 10px;
- height: 10px;
- border-radius: 50%;
- background: transparent;
- border: 2px solid rgba(255, 255, 255, 0.2);
- transition: all 0.3s ease;
-}
-
-.pokeball-checkbox:checked {
- border-color: var(--neon-yellow);
- background: radial-gradient(circle, #ff3366 40%, #cc0033 60%, #990022 100%);
- box-shadow: 0 0 12px rgba(255, 51, 102, 0.5), inset 0 0 8px rgba(255, 255, 255, 0.2);
-}
-
-.pokeball-checkbox:checked::before {
- background: white;
- border-color: white;
- box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
- width: 6px;
- height: 6px;
-}
-
-.pokeball-checkbox:hover {
- transform: scale(1.15);
- border-color: var(--neon-magenta);
-}
-
-/* ============================================
- 💥 ANIMACIÓN DE SHAKE (para input inválido)
- ============================================ */
-@keyframes shake {
- 0%, 100% { transform: translateX(0); }
- 20% { transform: translateX(-6px); }
- 40% { transform: translateX(6px); }
- 60% { transform: translateX(-4px); }
- 80% { transform: translateX(4px); }
-}
+:root { --bg:#070b1d; --panel:rgba(14,20,51,.76); --text:#f7f8ff; --text-secondary:#aeb8dc; --neon-cyan:#2de2e6; --neon-magenta:#ff4fd8; --neon-yellow:#ffe66d; --danger:#ff5777; }
+* { box-sizing:border-box; }
+body { min-height:100vh; margin:0; overflow-x:hidden; color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; background:radial-gradient(circle at 15% 20%,#202f70 0,transparent 30%),radial-gradient(circle at 85% 80%,#4a195f 0,transparent 35%),var(--bg); }
+.bg-grid { position:fixed; inset:0; z-index:-3; opacity:.22; background-image:linear-gradient(#4d5b9b 1px,transparent 1px),linear-gradient(90deg,#4d5b9b 1px,transparent 1px); background-size:36px 36px; mask-image:radial-gradient(circle,#000,transparent 75%); }
+.stars-container,.shooting-stars { position:fixed; inset:0; pointer-events:none; z-index:-2; overflow:hidden; }.particle { position:absolute; border-radius:50%; opacity:0; animation:float 14s linear infinite; }.shooting-star { position:absolute; width:100px; height:2px; opacity:0; background:linear-gradient(90deg,var(--neon-cyan),transparent); transform:rotate(-25deg); animation:shooting 5s ease-in infinite; }
+.glass-container { width:min(700px,calc(100% - 32px)); margin:8vh auto 40px; padding:clamp(24px,5vw,42px); border:1px solid rgba(115,223,255,.25); border-radius:28px; background:var(--panel); box-shadow:0 24px 80px rgba(0,0,0,.4),0 0 35px rgba(45,226,230,.1); backdrop-filter:blur(16px); }.title { margin:0; text-align:center; font-size:clamp(2rem,6vw,3.4rem); letter-spacing:-.06em; text-shadow:0 0 22px rgba(45,226,230,.4); }.title-sparkle { color:var(--neon-yellow); }.subtitle { margin:10px 0 30px; color:var(--text-secondary); text-align:center; }
+.task-form { display:flex; gap:10px; }.task-form input { flex:1; min-width:0; padding:15px 17px; border:1px solid rgba(0,245,255,.25); border-radius:14px; outline:none; color:var(--text); font:inherit; background:rgba(255,255,255,.06); transition:.25s; }.task-form input:focus { border-color:var(--neon-cyan); box-shadow:0 0 0 4px rgba(45,226,230,.12); }button { font:inherit; cursor:pointer; }.btn-add { padding:0 18px; border:0; border-radius:14px; color:#071122; font-weight:800; background:linear-gradient(135deg,var(--neon-cyan),#7df6ff); box-shadow:0 8px 20px rgba(45,226,230,.22); transition:.2s; }.btn-add:hover { transform:translateY(-2px); box-shadow:0 12px 24px rgba(45,226,230,.35); }
+.filters { display:flex; flex-wrap:wrap; gap:8px; margin:24px 0 14px; }.filter-btn { padding:8px 12px; border:1px solid rgba(174,184,220,.25); border-radius:999px; color:var(--text-secondary); background:transparent; transition:.2s; }.filter-btn:hover,.filter-btn.active { color:#0c142c; border-color:var(--neon-yellow); background:var(--neon-yellow); }.task-list { display:grid; gap:10px; min-height:64px; margin:0; padding:0; list-style:none; }.task-item { display:flex; align-items:center; gap:13px; padding:14px; border:1px solid rgba(174,184,220,.15); border-radius:16px; background:rgba(255,255,255,.045); animation:appear .25s ease-out; }.task-text { flex:1; overflow-wrap:anywhere; }.completed .task-text { color:var(--text-secondary); text-decoration:line-through; }.task-delete { width:34px; height:34px; border:0; border-radius:10px; color:#ff9bb0; background:transparent; font-size:1.25rem; transition:.2s; }.task-delete:hover { color:#fff; background:var(--danger); }.stats { display:flex; justify-content:space-between; gap:12px; margin-top:22px; padding-top:18px; border-top:1px solid rgba(174,184,220,.16); color:var(--text-secondary); font-size:.92rem; }
+.pokeball-checkbox { appearance:none; -webkit-appearance:none; width:27px; height:27px; margin:0; border:2px solid var(--neon-cyan); border-radius:50%; background:rgba(0,0,0,.3); cursor:pointer; position:relative; flex-shrink:0; transition:.25s; }.pokeball-checkbox::before { content:''; position:absolute; inset:7px; border:2px solid rgba(255,255,255,.25); border-radius:50%; transition:.25s; }.pokeball-checkbox:checked { border-color:var(--neon-yellow); background:radial-gradient(circle,#fff 0 15%,#242424 18% 25%,#ef3f5c 28% 100%); box-shadow:0 0 12px rgba(255,51,102,.5); }.pokeball-checkbox:checked::before { opacity:0; }.pokeball-checkbox:hover { transform:scale(1.12); border-color:var(--neon-magenta); }
+@keyframes appear { from { opacity:0; transform:translateY(8px); } } @keyframes shake { 20%,60% { transform:translateX(-6px); } 40%,80% { transform:translateX(6px); } } @keyframes float { 0% { transform:translateY(105vh); opacity:0; } 10%,90% { opacity:.85; } 100% { transform:translateY(-10vh); opacity:0; } } @keyframes shooting { 0%,65% { opacity:0; transform:translate(0,0) rotate(-25deg); } 70% { opacity:.8; } 100% { opacity:0; transform:translate(-280px,130px) rotate(-25deg); } } @media (max-width:510px) { .glass-container { margin-top:20px; }.task-form,.stats { flex-direction:column; }.btn-add { min-height:48px; } }
