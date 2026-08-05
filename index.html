@@ -26,7 +26,8 @@
         <option value="high">Prioridad alta</option>
         <option value="low">Prioridad baja</option>
       </select>
-      <button type="submit" class="btn-add">Agregar</button>
+      <input id="durationInput" class="duration-input" type="number" min="1" max="480" placeholder="Minutos" aria-label="Duración opcional en minutos">
+      <button type="submit" class="btn-add"><span>✦</span> Agregar <span>✦</span></button>
     </form>
     <section class="progress-section" aria-label="Progreso de tareas">
       <div class="progress-heading"><strong>Progreso del entrenador</strong><span id="progressPercentage">0%</span></div>
@@ -43,11 +44,25 @@
       <article class="insight-card streak-card"><span class="insight-icon">🔥</span><div><strong><span id="streakDays">0</span> días de racha</strong><small>Completa al menos una tarea cada día.</small></div></article>
       <article class="insight-card achievement-card"><span class="insight-icon">🏆</span><div><strong>Logro destacado</strong><p id="weeklyAchievement">Tu aventura comienza hoy.</p></div></article>
     </section>
+    <section class="weekly-chart-section" aria-label="Actividad semanal">
+      <div class="chart-heading"><strong>Actividad semanal</strong><small>Misiones completadas por día</small></div>
+      <div id="weeklyChart" class="weekly-chart"></div>
+    </section>
     <div class="stats">
       <span id="totalTasks">Total: 0</span>
       <span id="completedTasks">Completadas: 0</span>
     </div>
   </main>
+  <div id="successModal" class="success-modal" role="dialog" aria-modal="true" aria-labelledby="successTitle" hidden>
+    <div class="success-content">
+      <button id="closeSuccess" class="close-success" type="button" aria-label="Cerrar celebración">×</button>
+      <div class="pokedex-celebration"><span class="pokedex-screen">✓</span></div>
+      <img class="caught-pokemon" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" alt="Pikachu atrapado">
+      <h2 id="successTitle">¡Felicidades!</h2>
+      <p>Completaste todas las tareas de hoy.</p>
+      <span class="catch-message">¡La Pokédex registró un nuevo Pokémon!</span>
+    </div>
+  </div>
   <script src="proyecto.js"></script>
 </body>
 </html>
