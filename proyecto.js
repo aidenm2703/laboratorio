@@ -57,6 +57,9 @@ document.head.appendChild(cursorStyles);
 const captureStyles = document.createElement('style');
 captureStyles.textContent = '.success-modal.catching-mode{cursor:none}.cursor-pokeball.capturing{animation:capture-ball .85s ease-in-out;transform:translate(-50%,-50%) scale(1.35)}.music-button{padding:6px 10px;border:1px solid #ffe66d;border-radius:999px;color:#fff3a4;background:rgba(255,230,109,.12);font-size:.82rem;font-weight:800}.music-button:hover{background:rgba(255,230,109,.25)}@keyframes capture-ball{20%{transform:translate(-50%,-50%) scale(1.7)}45%{transform:translate(-50%,-50%) rotate(20deg) scale(1.4)}65%{transform:translate(-50%,-50%) rotate(-20deg) scale(1.4)}100%{transform:translate(-50%,-50%) scale(1)}}';
 document.head.appendChild(captureStyles);
+const taskImageStyles = document.createElement('style');
+taskImageStyles.textContent = '.completion-image-button{position:relative;padding:5px 8px;border:1px solid rgba(45,226,230,.45);border-radius:8px;color:#b7f9ff;font-size:.72rem;background:rgba(45,226,230,.08);cursor:pointer}.completion-image-input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}.completion-image-preview{width:38px;height:38px;object-fit:cover;border:1px solid #ffe66d;border-radius:8px}';
+document.head.appendChild(taskImageStyles);
 
 let tasks = loadTasks();
 let completionDays = loadDays();
@@ -114,15 +117,15 @@ function startBackgroundMusic() {
     musicContext = musicContext || new (window.AudioContext || window.webkitAudioContext)();
     musicContext.resume();
     const playPhrase = () => {
-      const melody = [523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 880, 698.46];
+      const melody = [392, 440, 523.25, 587.33, 659.25, 587.33, 523.25, 440, 349.23, 392, 493.88, 523.25, 587.33, 523.25, 493.88, 440, 392, 440, 523.25, 493.88, 440, 392, 349.23, 392];
       melody.forEach((frequency, index) => {
-        const oscillator = musicContext.createOscillator(), gain = musicContext.createGain(), start = musicContext.currentTime + index * .18;
-        oscillator.type = index % 3 === 0 ? 'square' : 'triangle'; oscillator.frequency.setValueAtTime(frequency, start);
-        gain.gain.setValueAtTime(.055, start); gain.gain.exponentialRampToValueAtTime(.001, start + .16);
-        oscillator.connect(gain).connect(musicContext.destination); oscillator.start(start); oscillator.stop(start + .17);
+        const oscillator = musicContext.createOscillator(), gain = musicContext.createGain(), start = musicContext.currentTime + index * .3;
+        oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(frequency, start);
+        gain.gain.setValueAtTime(.035, start); gain.gain.exponentialRampToValueAtTime(.001, start + .28);
+        oscillator.connect(gain).connect(musicContext.destination); oscillator.start(start); oscillator.stop(start + .29);
       });
     };
-    playPhrase(); musicTimer = setInterval(playPhrase, 2100); musicButton.textContent = '🔇 Pausar música';
+    playPhrase(); musicTimer = setInterval(playPhrase, 7600); musicButton.textContent = '🔇 Pausar música';
   } catch { musicButton.textContent = 'No se pudo activar el sonido'; }
 }
 async function loadPokemonTypes(pokemon) {
@@ -158,7 +161,7 @@ function renderTasks() {
   updateDashboard();
 }
 function createTaskElement(task) {
-  const item = document.createElement('li'), handle = document.createElement('span'), checkbox = document.createElement('input'), text = document.createElement('span'), badge = document.createElement('span'), timer = document.createElement('div'), edit = document.createElement('button'), remove = document.createElement('button');
+  const item = document.createElement('li'), handle = document.createElement('span'), checkbox = document.createElement('input'), text = document.createElement('span'), badge = document.createElement('span'), timer = document.createElement('div'), edit = document.createElement('button'), remove = document.createElement('button'), imageUpload = document.createElement('input'), imageButton = document.createElement('label'), imagePreview = document.createElement('img');
   item.className = `task-item${task.completed ? ' completed' : ''}`; item.draggable = true; item.dataset.id = task.id;
   item.addEventListener('dragstart', onDragStart); item.addEventListener('dragover', event => event.preventDefault()); item.addEventListener('drop', onDrop); item.addEventListener('dragend', () => item.classList.remove('dragging'));
   handle.className = 'drag-handle'; handle.textContent = '⋮⋮'; handle.title = 'Arrastra para ordenar';
@@ -168,7 +171,8 @@ function createTaskElement(task) {
   if (task.remainingSeconds !== null) { timer.className = 'task-timer'; timer.innerHTML = `<span class="timer-value">${formatTime(remainingFor(task))}</span>`; const button = document.createElement('button'); button.type = 'button'; button.className = 'timer-button'; button.textContent = task.timerRunning ? 'Pausa' : remainingFor(task) ? 'Iniciar' : 'Finalizó'; button.disabled = !remainingFor(task); button.addEventListener('click', () => toggleTimer(task.id)); timer.appendChild(button); }
   edit.className = 'task-edit'; edit.type = 'button'; edit.textContent = '✎'; edit.title = 'Editar tarea'; edit.addEventListener('click', () => editTask(task.id));
   remove.className = 'task-delete'; remove.type = 'button'; remove.textContent = '×'; remove.title = 'Eliminar tarea'; remove.addEventListener('click', () => deleteTask(task.id, item));
-  item.append(handle, checkbox, text, badge, timer, edit, remove); return item;
+  if (task.completed) { imageUpload.type = 'file'; imageUpload.accept = 'image/*'; imageUpload.className = 'completion-image-input'; imageUpload.setAttribute('aria-label', `Subir imagen de ${task.text}`); imageUpload.addEventListener('change', () => saveCompletionImage(task.id, imageUpload.files?.[0])); imageButton.className = 'completion-image-button'; imageButton.title = 'Subir imagen de tarea completada'; imageButton.textContent = task.completionImage ? 'Cambiar imagen' : 'Subir imagen'; imageButton.appendChild(imageUpload); if (task.completionImage) { imagePreview.className = 'completion-image-preview'; imagePreview.src = task.completionImage; imagePreview.alt = `Imagen de tarea completada: ${task.text}`; } }
+  item.append(handle, checkbox, text, badge, timer, imageButton, imagePreview, edit, remove); return item;
 }
 function onDragStart(event) { draggedId = event.currentTarget.dataset.id; event.currentTarget.classList.add('dragging'); event.dataTransfer.effectAllowed = 'move'; }
 function onDrop(event) { event.preventDefault(); const targetId = event.currentTarget.dataset.id; if (!draggedId || draggedId === targetId) return; const from = tasks.findIndex(t => t.id === draggedId), to = tasks.findIndex(t => t.id === targetId); tasks.splice(to, 0, tasks.splice(from, 1)[0]); saveTasks(); renderTasks(); }
@@ -188,6 +192,11 @@ function lastSevenDays() { return Array.from({ length: 7 }, (_, i) => { const da
 function countWeekCompletions() { const keys = new Set(lastSevenDays().map(dayKey)); return completionDays.filter(d => keys.has(d)).length; }
 function getStreak() { const dates = new Set(completionDays); let count = 0; for (let i = 0; i < 365; i++) { const date = new Date(); date.setDate(date.getDate() - i); if (dates.has(dayKey(date))) count++; else break; } return count; }
 function renderWeeklyChart() { weeklyChart.replaceChildren(); const completed = new Set(completionDays), labels = ['D', 'L', 'M', 'X', 'J', 'V', 'S']; lastSevenDays().forEach(date => { const isDone = completed.has(dayKey(date)), column = document.createElement('div'); column.className = 'chart-column'; column.innerHTML = `<span class="chart-value">${isDone ? '✓' : ''}</span><span class="chart-bar ${isDone ? 'active' : ''}" style="height:${isDone ? 100 : 18}%"></span><small>${labels[date.getDay()]}</small>`; weeklyChart.appendChild(column); }); }
+function saveCompletionImage(id, file) {
+  if (!file?.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = () => { const image = new Image(); image.onload = () => { const scale = Math.min(1, 500 / Math.max(image.width, image.height)), canvas = document.createElement('canvas'); canvas.width = Math.round(image.width * scale); canvas.height = Math.round(image.height * scale); canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height); const task = tasks.find(item => item.id === id); if (!task) return; task.completionImage = canvas.toDataURL('image/jpeg', .72); saveTasks(); renderTasks(); }; image.src = reader.result; }; reader.readAsDataURL(file);
+}
 function toggleTask(id) { const task = tasks.find(t => t.id === id); if (!task) return; task.completed = !task.completed; if (task.completed) { const today = dayKey(); if (!completionDays.includes(today)) { completionDays.push(today); saveDays(); } } saveTasks(); renderTasks(); if (task.completed && tasks.length && tasks.every(t => t.completed)) setTimeout(showSuccess, 350); }
 function showSuccess() {
   encounterPokemon = pokemonEncounters[Math.floor(Math.random() * pokemonEncounters.length)];
