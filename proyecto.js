@@ -21,6 +21,8 @@ const successContent = $('.success-content');
 let encounterPokemon = null;
 let encounterCaught = false;
 let introPlayed = false;
+let musicContext = null;
+let musicTimer = null;
 const starterPokemonEncounters = [
   { id: 1, name: 'Bulbasaur' }, { id: 4, name: 'Charmander' }, { id: 7, name: 'Squirtle' },
   { id: 10, name: 'Caterpie' }, { id: 13, name: 'Weedle' }, { id: 16, name: 'Pidgey' },
@@ -42,6 +44,9 @@ document.head.appendChild(encounterStyles);
 const captureCounter = document.createElement('span');
 captureCounter.id = 'monthlyCaptures';
 $('.stats').appendChild(captureCounter);
+const musicButton = document.createElement('button');
+musicButton.type = 'button'; musicButton.className = 'music-button'; musicButton.textContent = '🔊 Activar música';
+$('.stats').appendChild(musicButton);
 const cursorPokeball = document.createElement('span');
 cursorPokeball.className = 'cursor-pokeball';
 cursorPokeball.setAttribute('aria-hidden', 'true');
@@ -50,7 +55,7 @@ const cursorStyles = document.createElement('style');
 cursorStyles.textContent = '.cursor-pokeball{position:fixed;z-index:20;width:34px;aspect-ratio:1;pointer-events:none;opacity:0;transform:translate(-50%,-50%) scale(.7);transition:opacity .15s,transform .15s;border:3px solid #252525;border-radius:50%;background:radial-gradient(circle,#fff 0 14%,#252525 16% 25%,transparent 27%),linear-gradient(#ef3f5c 0 47%,#252525 48% 54%,#fff 55%);box-shadow:0 0 12px rgba(255,255,255,.8)}.cursor-pokeball.visible{opacity:1;transform:translate(-50%,-50%) scale(1)}.caught-pokemon.dodging{animation:wild-dodge .42s ease-in-out infinite!important}';
 document.head.appendChild(cursorStyles);
 const captureStyles = document.createElement('style');
-captureStyles.textContent = '.success-modal.catching-mode{cursor:none}.cursor-pokeball.capturing{animation:capture-ball .85s ease-in-out;transform:translate(-50%,-50%) scale(1.35)}@keyframes capture-ball{20%{transform:translate(-50%,-50%) scale(1.7)}45%{transform:translate(-50%,-50%) rotate(20deg) scale(1.4)}65%{transform:translate(-50%,-50%) rotate(-20deg) scale(1.4)}100%{transform:translate(-50%,-50%) scale(1)}}';
+captureStyles.textContent = '.success-modal.catching-mode{cursor:none}.cursor-pokeball.capturing{animation:capture-ball .85s ease-in-out;transform:translate(-50%,-50%) scale(1.35)}.music-button{padding:6px 10px;border:1px solid #ffe66d;border-radius:999px;color:#fff3a4;background:rgba(255,230,109,.12);font-size:.82rem;font-weight:800}.music-button:hover{background:rgba(255,230,109,.25)}@keyframes capture-ball{20%{transform:translate(-50%,-50%) scale(1.7)}45%{transform:translate(-50%,-50%) rotate(20deg) scale(1.4)}65%{transform:translate(-50%,-50%) rotate(-20deg) scale(1.4)}100%{transform:translate(-50%,-50%) scale(1)}}';
 document.head.appendChild(captureStyles);
 
 let tasks = loadTasks();
@@ -71,11 +76,11 @@ function loadTasks() {
 function loadDays() { try { const saved = JSON.parse(localStorage.getItem('poketasks-completion-days')); return Array.isArray(saved) ? saved : []; } catch { return []; } }
 function saveTasks() { localStorage.setItem('poketasks', JSON.stringify(tasks)); }
 function saveDays() { localStorage.setItem('poketasks-completion-days', JSON.stringify(completionDays)); }
-function loadCaptures() { try { const saved = JSON.parse(localStorage.getItem('poketasks-captures')); return Array.isArray(saved) ? saved : []; } catch { return []; } }
+function loadCaptures() { try { const saved = JSON.parse(localStorage.getItem('poketasks-captures')); return Array.isArray(saved) ? saved.map(capture => typeof capture === 'string' ? { month: capture, types: [] } : capture) : []; } catch { return []; } }
 function saveCaptures(captures) { localStorage.setItem('poketasks-captures', JSON.stringify(captures)); }
 function currentMonth() { return new Date().toISOString().slice(0, 7); }
-function updateCaptureCounter() { const total = loadCaptures().filter(month => month === currentMonth()).length; captureCounter.textContent = `Pokémon atrapados este mes: ${total}`; }
-function registerCapture() { const captures = loadCaptures(); captures.push(currentMonth()); saveCaptures(captures); updateCaptureCounter(); }
+function updateCaptureCounter() { const captures = loadCaptures().filter(capture => capture.month === currentMonth()), types = {}; captures.forEach(capture => (capture.types || []).forEach(type => { types[type] = (types[type] || 0) + 1; })); const summary = Object.entries(types).map(([type, total]) => `${type} ${total}`).join(' · '); captureCounter.textContent = `Pokémon atrapados este mes: ${captures.length}${summary ? ` · Tipos: ${summary}` : ''}`; }
+function registerCapture() { const captures = loadCaptures(); captures.push({ month: currentMonth(), types: encounterPokemon?.types || [] }); saveCaptures(captures); updateCaptureCounter(); }
 function dayKey(date = new Date()) { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Guatemala' }).format(date); }
 
 function playBattleSound() {
@@ -101,6 +106,34 @@ function playIntroJingle() {
       oscillator.connect(gain).connect(context.destination); oscillator.start(start); oscillator.stop(start + .21);
     });
     introPlayed = true;
+  } catch {}
+}
+function startBackgroundMusic() {
+  if (musicTimer) { clearInterval(musicTimer); musicTimer = null; musicButton.textContent = '🔊 Activar música'; return; }
+  try {
+    musicContext = musicContext || new (window.AudioContext || window.webkitAudioContext)();
+    musicContext.resume();
+    const playPhrase = () => {
+      const melody = [523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 880, 698.46];
+      melody.forEach((frequency, index) => {
+        const oscillator = musicContext.createOscillator(), gain = musicContext.createGain(), start = musicContext.currentTime + index * .18;
+        oscillator.type = index % 3 === 0 ? 'square' : 'triangle'; oscillator.frequency.setValueAtTime(frequency, start);
+        gain.gain.setValueAtTime(.055, start); gain.gain.exponentialRampToValueAtTime(.001, start + .16);
+        oscillator.connect(gain).connect(musicContext.destination); oscillator.start(start); oscillator.stop(start + .17);
+      });
+    };
+    playPhrase(); musicTimer = setInterval(playPhrase, 2100); musicButton.textContent = '🔇 Pausar música';
+  } catch { musicButton.textContent = 'No se pudo activar el sonido'; }
+}
+async function loadPokemonTypes(pokemon) {
+  pokemon.types = [];
+  try {
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon.id}`);
+    if (!response.ok) return;
+    const data = await response.json();
+    const typeNames = { normal: 'Normal', fire: 'Fuego', water: 'Agua', electric: 'Eléctrico', grass: 'Planta', ice: 'Hielo', fighting: 'Lucha', poison: 'Veneno', ground: 'Tierra', flying: 'Volador', psychic: 'Psíquico', bug: 'Bicho', rock: 'Roca', ghost: 'Fantasma', dragon: 'Dragón', dark: 'Siniestro', steel: 'Acero', fairy: 'Hada' };
+    pokemon.types = data.types.map(entry => typeNames[entry.type.name] || entry.type.name);
+    if (pokemon === encounterPokemon && !encounterCaught) $('.catch-message').textContent = `Tipo: ${pokemon.types.join(' / ')}. Pasa la Pokébola sobre el Pokémon y haz clic para atraparlo.`;
   } catch {}
 }
 function playCatchSound() {
@@ -169,6 +202,7 @@ function showSuccess() {
   successTitle.textContent = `¡Apareció ${encounterPokemon.name}!`;
   $('#successModal p').textContent = 'Completaste todas las tareas. ¡Intenta atraparlo!';
   $('.catch-message').textContent = 'Pasa la Pokébola sobre el Pokémon y haz clic para atraparlo.';
+  loadPokemonTypes(encounterPokemon);
   $('#catchPokemon')?.remove();
   successModal.hidden = false; successModal.classList.add('catching-mode'); wildPokemon.focus();
 }
@@ -206,4 +240,5 @@ successModal.addEventListener('mousemove', event => {
 });
 successModal.addEventListener('mouseleave', () => { cursorPokeball.classList.remove('visible'); wildPokemon.classList.remove('dodging'); });
 document.addEventListener('pointerdown', playIntroJingle, { once: true });
+musicButton.addEventListener('click', startBackgroundMusic);
 createShootingStars(); createParticles(); renderTasks(); updateCaptureCounter(); setInterval(tickTimers, 1000);
