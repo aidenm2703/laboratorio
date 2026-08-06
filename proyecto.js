@@ -15,6 +15,39 @@ const streakDays = $('#streakDays');
 const weeklyAchievement = $('#weeklyAchievement');
 const weeklyChart = $('#weeklyChart');
 const successModal = $('#successModal');
+const wildPokemon = $('.caught-pokemon');
+const successTitle = $('#successTitle');
+const successContent = $('.success-content');
+let encounterPokemon = null;
+let encounterCaught = false;
+let introPlayed = false;
+const pokemonEncounters = [
+  { id: 1, name: 'Bulbasaur' }, { id: 4, name: 'Charmander' }, { id: 7, name: 'Squirtle' },
+  { id: 10, name: 'Caterpie' }, { id: 13, name: 'Weedle' }, { id: 16, name: 'Pidgey' },
+  { id: 19, name: 'Rattata' }, { id: 25, name: 'Pikachu' }, { id: 27, name: 'Sandshrew' },
+  { id: 35, name: 'Clefairy' }, { id: 39, name: 'Jigglypuff' }, { id: 43, name: 'Oddish' },
+  { id: 52, name: 'Meowth' }, { id: 54, name: 'Psyduck' }, { id: 58, name: 'Growlithe' },
+  { id: 63, name: 'Abra' }, { id: 66, name: 'Machop' }, { id: 74, name: 'Geodude' },
+  { id: 77, name: 'Ponyta' }, { id: 81, name: 'Magnemite' }, { id: 90, name: 'Shellder' },
+  { id: 92, name: 'Gastly' }, { id: 95, name: 'Onix' }, { id: 104, name: 'Cubone' },
+  { id: 113, name: 'Chansey' }, { id: 123, name: 'Scyther' }, { id: 129, name: 'Magikarp' },
+  { id: 131, name: 'Lapras' }, { id: 133, name: 'Eevee' }, { id: 143, name: 'Snorlax' },
+  { id: 147, name: 'Dratini' }, { id: 152, name: 'Chikorita' }, { id: 155, name: 'Cyndaquil' },
+  { id: 158, name: 'Totodile' }, { id: 172, name: 'Pichu' }
+];
+const encounterStyles = document.createElement('style');
+encounterStyles.textContent = '.caught-pokemon{width:116px;cursor:crosshair}.caught-pokemon:not(.is-caught):hover{animation:wild-dodge .55s ease-in-out infinite;filter:drop-shadow(0 0 18px #fff) drop-shadow(0 0 22px #ffe66d)}.caught-pokemon:focus-visible{outline:3px solid #fff3a4;outline-offset:5px;border-radius:50%}.caught-pokemon.is-caught{animation:caught-pop .55s ease forwards}@keyframes wild-dodge{25%{transform:translate(-18px,-7px) rotate(-8deg)}60%{transform:translate(20px,5px) rotate(8deg)}}@keyframes caught-pop{0%{transform:scale(1);opacity:1}45%{transform:scale(.18);opacity:.15}70%,100%{transform:scale(.05);opacity:0}}';
+document.head.appendChild(encounterStyles);
+const captureCounter = document.createElement('span');
+captureCounter.id = 'monthlyCaptures';
+$('.stats').appendChild(captureCounter);
+const cursorPokeball = document.createElement('span');
+cursorPokeball.className = 'cursor-pokeball';
+cursorPokeball.setAttribute('aria-hidden', 'true');
+document.body.appendChild(cursorPokeball);
+const cursorStyles = document.createElement('style');
+cursorStyles.textContent = '.cursor-pokeball{position:fixed;z-index:20;width:34px;aspect-ratio:1;pointer-events:none;opacity:0;transform:translate(-50%,-50%) scale(.7);transition:opacity .15s,transform .15s;border:3px solid #252525;border-radius:50%;background:radial-gradient(circle,#fff 0 14%,#252525 16% 25%,transparent 27%),linear-gradient(#ef3f5c 0 47%,#252525 48% 54%,#fff 55%);box-shadow:0 0 12px rgba(255,255,255,.8)}.cursor-pokeball.visible{opacity:1;transform:translate(-50%,-50%) scale(1)}.caught-pokemon.dodging{animation:wild-dodge .42s ease-in-out infinite!important}';
+document.head.appendChild(cursorStyles);
 
 let tasks = loadTasks();
 let completionDays = loadDays();
@@ -34,6 +67,11 @@ function loadTasks() {
 function loadDays() { try { const saved = JSON.parse(localStorage.getItem('poketasks-completion-days')); return Array.isArray(saved) ? saved : []; } catch { return []; } }
 function saveTasks() { localStorage.setItem('poketasks', JSON.stringify(tasks)); }
 function saveDays() { localStorage.setItem('poketasks-completion-days', JSON.stringify(completionDays)); }
+function loadCaptures() { try { const saved = JSON.parse(localStorage.getItem('poketasks-captures')); return Array.isArray(saved) ? saved : []; } catch { return []; } }
+function saveCaptures(captures) { localStorage.setItem('poketasks-captures', JSON.stringify(captures)); }
+function currentMonth() { return new Date().toISOString().slice(0, 7); }
+function updateCaptureCounter() { const total = loadCaptures().filter(month => month === currentMonth()).length; captureCounter.textContent = `Pokémon atrapados este mes: ${total}`; }
+function registerCapture() { const captures = loadCaptures(); captures.push(currentMonth()); saveCaptures(captures); updateCaptureCounter(); }
 function dayKey(date = new Date()) { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Guatemala' }).format(date); }
 
 function playBattleSound() {
@@ -44,6 +82,30 @@ function playBattleSound() {
       oscillator.type = 'square'; oscillator.frequency.setValueAtTime(frequency, start);
       gain.gain.setValueAtTime(.035, start); gain.gain.exponentialRampToValueAtTime(.001, start + .13);
       oscillator.connect(gain).connect(context.destination); oscillator.start(start); oscillator.stop(start + .14);
+    });
+  } catch {}
+}
+function playIntroJingle() {
+  if (introPlayed) return;
+  try {
+    const context = new (window.AudioContext || window.webkitAudioContext)();
+    [523.25, 659.25, 783.99, 659.25, 880].forEach((frequency, index) => {
+      const oscillator = context.createOscillator(), gain = context.createGain(), start = context.currentTime + index * .12;
+      oscillator.type = 'triangle'; oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(.045, start); gain.gain.exponentialRampToValueAtTime(.001, start + .2);
+      oscillator.connect(gain).connect(context.destination); oscillator.start(start); oscillator.stop(start + .21);
+    });
+    introPlayed = true;
+  } catch {}
+}
+function playCatchSound() {
+  try {
+    const context = new (window.AudioContext || window.webkitAudioContext)();
+    [392, 523.25, 659.25, 783.99].forEach((frequency, index) => {
+      const oscillator = context.createOscillator(), gain = context.createGain(), start = context.currentTime + index * .09;
+      oscillator.type = index === 3 ? 'triangle' : 'square'; oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(.07, start); gain.gain.exponentialRampToValueAtTime(.001, start + .18);
+      oscillator.connect(gain).connect(context.destination); oscillator.start(start); oscillator.stop(start + .2);
     });
   } catch {}
 }
@@ -89,7 +151,35 @@ function countWeekCompletions() { const keys = new Set(lastSevenDays().map(dayKe
 function getStreak() { const dates = new Set(completionDays); let count = 0; for (let i = 0; i < 365; i++) { const date = new Date(); date.setDate(date.getDate() - i); if (dates.has(dayKey(date))) count++; else break; } return count; }
 function renderWeeklyChart() { weeklyChart.replaceChildren(); const completed = new Set(completionDays), labels = ['D', 'L', 'M', 'X', 'J', 'V', 'S']; lastSevenDays().forEach(date => { const isDone = completed.has(dayKey(date)), column = document.createElement('div'); column.className = 'chart-column'; column.innerHTML = `<span class="chart-value">${isDone ? '✓' : ''}</span><span class="chart-bar ${isDone ? 'active' : ''}" style="height:${isDone ? 100 : 18}%"></span><small>${labels[date.getDay()]}</small>`; weeklyChart.appendChild(column); }); }
 function toggleTask(id) { const task = tasks.find(t => t.id === id); if (!task) return; task.completed = !task.completed; if (task.completed) { const today = dayKey(); if (!completionDays.includes(today)) { completionDays.push(today); saveDays(); } } saveTasks(); renderTasks(); if (task.completed && tasks.length && tasks.every(t => t.completed)) setTimeout(showSuccess, 350); }
-function showSuccess() { successModal.hidden = false; $('#closeSuccess').focus(); }
+function showSuccess() {
+  encounterPokemon = pokemonEncounters[Math.floor(Math.random() * pokemonEncounters.length)];
+  encounterCaught = false;
+  playBattleSound();
+  wildPokemon.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${encounterPokemon.id}.png`;
+  wildPokemon.alt = `${encounterPokemon.name} salvaje`;
+  wildPokemon.tabIndex = 0;
+  wildPokemon.setAttribute('role', 'button');
+  wildPokemon.setAttribute('aria-label', `Atrapar a ${encounterPokemon.name}`);
+  wildPokemon.classList.remove('is-caught');
+  successTitle.textContent = `¡Apareció ${encounterPokemon.name}!`;
+  $('#successModal p').textContent = 'Completaste todas las tareas. ¡Intenta atraparlo!';
+  $('.catch-message').textContent = 'Pasa la Pokébola sobre el Pokémon y haz clic para atraparlo.';
+  $('#catchPokemon')?.remove();
+  successModal.hidden = false; wildPokemon.focus();
+}
+function catchWildPokemon() {
+  if (!encounterPokemon || encounterCaught) return;
+  encounterCaught = true;
+  $('.catch-message').textContent = `La Pokébola se mueve... ${encounterPokemon.name} está dentro.`;
+  setTimeout(() => {
+    playCatchSound(); wildPokemon.classList.add('is-caught');
+    registerCapture();
+    successTitle.textContent = `¡${encounterPokemon.name} fue atrapado!`;
+    $('#successModal p').textContent = 'Tu esfuerzo completando tareas dio resultado.';
+    $('.catch-message').textContent = `¡${encounterPokemon.name} se registró en tu Pokédex!`;
+    $('.pokedex-screen').textContent = '✓';
+  }, 850);
+}
 function deleteTask(id, item) { playBattleSound(); item.style.cssText += ';opacity:0;transform:translateX(25px) scale(.96);transition:.3s'; setTimeout(() => { tasks = tasks.filter(t => t.id !== id); saveTasks(); renderTasks(); }, 300); }
 function addTask(text) { const minutes = Number(durationInput.value); tasks.unshift({ id: crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`, text, priority: priorityInput.value, completed: false, remainingSeconds: Number.isFinite(minutes) && minutes > 0 ? Math.round(minutes * 60) : null, timerRunning: false, timerEnds: null }); saveTasks(); playBattleSound(); renderTasks(); }
 function editTask(id) { const task = tasks.find(t => t.id === id), next = prompt('Edita tu tarea:', task.text); if (next === null || !next.trim()) return; task.text = next.trim(); const priority = prompt('Prioridad: alta, media o baja', task.priority); const translated = { alta: 'high', media: 'medium', baja: 'low' }[priority?.toLowerCase()] || priority?.toLowerCase(); if (['high', 'medium', 'low'].includes(translated)) task.priority = translated; saveTasks(); renderTasks(); }
@@ -97,4 +187,16 @@ function resetInput() { taskInput.removeAttribute('style'); taskInput.placeholde
 function setFilter(filter) { currentFilter = filter; filterBtns.forEach(button => button.classList.toggle('active', button.dataset.filter === filter)); renderTasks(); }
 taskForm.addEventListener('submit', event => { event.preventDefault(); const text = taskInput.value.trim(); if (!text) { taskInput.style.cssText = 'border-color:#ff5777;box-shadow:0 0 18px rgba(255,87,119,.4);animation:shake .3s ease'; taskInput.placeholder = 'Escribe una tarea primero'; taskInput.focus(); return; } addTask(text); taskInput.value = ''; durationInput.value = ''; resetInput(); taskInput.focus(); });
 taskInput.addEventListener('input', resetInput); filterBtns.forEach(button => button.addEventListener('click', () => setFilter(button.dataset.filter))); $('#closeSuccess').addEventListener('click', () => { successModal.hidden = true; }); successModal.addEventListener('click', event => { if (event.target === successModal) successModal.hidden = true; });
-createShootingStars(); createParticles(); renderTasks(); setInterval(tickTimers, 1000);
+wildPokemon.addEventListener('click', catchWildPokemon);
+wildPokemon.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); catchWildPokemon(); } });
+successModal.addEventListener('mousemove', event => {
+  const bounds = successModal.getBoundingClientRect();
+  cursorPokeball.style.left = `${event.clientX}px`; cursorPokeball.style.top = `${event.clientY}px`;
+  cursorPokeball.classList.add('visible');
+  const pokemonBounds = wildPokemon.getBoundingClientRect();
+  const distance = Math.hypot(event.clientX - (pokemonBounds.left + pokemonBounds.width / 2), event.clientY - (pokemonBounds.top + pokemonBounds.height / 2));
+  wildPokemon.classList.toggle('dodging', !encounterCaught && distance < 145 && event.clientX > bounds.left && event.clientX < bounds.right);
+});
+successModal.addEventListener('mouseleave', () => { cursorPokeball.classList.remove('visible'); wildPokemon.classList.remove('dodging'); });
+document.addEventListener('pointerdown', playIntroJingle, { once: true });
+createShootingStars(); createParticles(); renderTasks(); updateCaptureCounter(); playIntroJingle(); setInterval(tickTimers, 1000);
