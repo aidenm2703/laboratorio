@@ -21,7 +21,7 @@ const successContent = $('.success-content');
 let encounterPokemon = null;
 let encounterCaught = false;
 let introPlayed = false;
-const pokemonEncounters = [
+const starterPokemonEncounters = [
   { id: 1, name: 'Bulbasaur' }, { id: 4, name: 'Charmander' }, { id: 7, name: 'Squirtle' },
   { id: 10, name: 'Caterpie' }, { id: 13, name: 'Weedle' }, { id: 16, name: 'Pidgey' },
   { id: 19, name: 'Rattata' }, { id: 25, name: 'Pikachu' }, { id: 27, name: 'Sandshrew' },
@@ -35,6 +35,7 @@ const pokemonEncounters = [
   { id: 147, name: 'Dratini' }, { id: 152, name: 'Chikorita' }, { id: 155, name: 'Cyndaquil' },
   { id: 158, name: 'Totodile' }, { id: 172, name: 'Pichu' }
 ];
+const pokemonEncounters = Array.from({ length: 151 }, (_, index) => ({ id: index + 1, name: `Pokémon #${index + 1}` }));
 const encounterStyles = document.createElement('style');
 encounterStyles.textContent = '.caught-pokemon{width:116px;cursor:crosshair}.caught-pokemon:not(.is-caught):hover{animation:wild-dodge .55s ease-in-out infinite;filter:drop-shadow(0 0 18px #fff) drop-shadow(0 0 22px #ffe66d)}.caught-pokemon:focus-visible{outline:3px solid #fff3a4;outline-offset:5px;border-radius:50%}.caught-pokemon.is-caught{animation:caught-pop .55s ease forwards}@keyframes wild-dodge{25%{transform:translate(-18px,-7px) rotate(-8deg)}60%{transform:translate(20px,5px) rotate(8deg)}}@keyframes caught-pop{0%{transform:scale(1);opacity:1}45%{transform:scale(.18);opacity:.15}70%,100%{transform:scale(.05);opacity:0}}';
 document.head.appendChild(encounterStyles);
@@ -48,6 +49,9 @@ document.body.appendChild(cursorPokeball);
 const cursorStyles = document.createElement('style');
 cursorStyles.textContent = '.cursor-pokeball{position:fixed;z-index:20;width:34px;aspect-ratio:1;pointer-events:none;opacity:0;transform:translate(-50%,-50%) scale(.7);transition:opacity .15s,transform .15s;border:3px solid #252525;border-radius:50%;background:radial-gradient(circle,#fff 0 14%,#252525 16% 25%,transparent 27%),linear-gradient(#ef3f5c 0 47%,#252525 48% 54%,#fff 55%);box-shadow:0 0 12px rgba(255,255,255,.8)}.cursor-pokeball.visible{opacity:1;transform:translate(-50%,-50%) scale(1)}.caught-pokemon.dodging{animation:wild-dodge .42s ease-in-out infinite!important}';
 document.head.appendChild(cursorStyles);
+const captureStyles = document.createElement('style');
+captureStyles.textContent = '.success-modal.catching-mode{cursor:none}.cursor-pokeball.capturing{animation:capture-ball .85s ease-in-out;transform:translate(-50%,-50%) scale(1.35)}@keyframes capture-ball{20%{transform:translate(-50%,-50%) scale(1.7)}45%{transform:translate(-50%,-50%) rotate(20deg) scale(1.4)}65%{transform:translate(-50%,-50%) rotate(-20deg) scale(1.4)}100%{transform:translate(-50%,-50%) scale(1)}}';
+document.head.appendChild(captureStyles);
 
 let tasks = loadTasks();
 let completionDays = loadDays();
@@ -89,6 +93,7 @@ function playIntroJingle() {
   if (introPlayed) return;
   try {
     const context = new (window.AudioContext || window.webkitAudioContext)();
+    if (context.state === 'suspended') { context.resume(); }
     [523.25, 659.25, 783.99, 659.25, 880].forEach((frequency, index) => {
       const oscillator = context.createOscillator(), gain = context.createGain(), start = context.currentTime + index * .12;
       oscillator.type = 'triangle'; oscillator.frequency.setValueAtTime(frequency, start);
@@ -165,11 +170,12 @@ function showSuccess() {
   $('#successModal p').textContent = 'Completaste todas las tareas. ¡Intenta atraparlo!';
   $('.catch-message').textContent = 'Pasa la Pokébola sobre el Pokémon y haz clic para atraparlo.';
   $('#catchPokemon')?.remove();
-  successModal.hidden = false; wildPokemon.focus();
+  successModal.hidden = false; successModal.classList.add('catching-mode'); wildPokemon.focus();
 }
 function catchWildPokemon() {
   if (!encounterPokemon || encounterCaught) return;
   encounterCaught = true;
+  cursorPokeball.classList.add('capturing');
   $('.catch-message').textContent = `La Pokébola se mueve... ${encounterPokemon.name} está dentro.`;
   setTimeout(() => {
     playCatchSound(); wildPokemon.classList.add('is-caught');
@@ -178,6 +184,7 @@ function catchWildPokemon() {
     $('#successModal p').textContent = 'Tu esfuerzo completando tareas dio resultado.';
     $('.catch-message').textContent = `¡${encounterPokemon.name} se registró en tu Pokédex!`;
     $('.pokedex-screen').textContent = '✓';
+    cursorPokeball.classList.remove('capturing');
   }, 850);
 }
 function deleteTask(id, item) { playBattleSound(); item.style.cssText += ';opacity:0;transform:translateX(25px) scale(.96);transition:.3s'; setTimeout(() => { tasks = tasks.filter(t => t.id !== id); saveTasks(); renderTasks(); }, 300); }
@@ -199,4 +206,4 @@ successModal.addEventListener('mousemove', event => {
 });
 successModal.addEventListener('mouseleave', () => { cursorPokeball.classList.remove('visible'); wildPokemon.classList.remove('dodging'); });
 document.addEventListener('pointerdown', playIntroJingle, { once: true });
-createShootingStars(); createParticles(); renderTasks(); updateCaptureCounter(); playIntroJingle(); setInterval(tickTimers, 1000);
+createShootingStars(); createParticles(); renderTasks(); updateCaptureCounter(); setInterval(tickTimers, 1000);
