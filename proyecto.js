@@ -51,6 +51,10 @@ const cursorPokeball = document.createElement('span');
 cursorPokeball.className = 'cursor-pokeball';
 cursorPokeball.setAttribute('aria-hidden', 'true');
 document.body.appendChild(cursorPokeball);
+const imagePreviewModal = document.createElement('div');
+imagePreviewModal.className = 'image-preview-modal'; imagePreviewModal.hidden = true;
+imagePreviewModal.innerHTML = '<button type="button" class="close-image-preview" aria-label="Cerrar vista previa">×</button><img alt="Vista previa de tarea completada">';
+document.body.appendChild(imagePreviewModal);
 const cursorStyles = document.createElement('style');
 cursorStyles.textContent = '.cursor-pokeball{position:fixed;z-index:20;width:34px;aspect-ratio:1;pointer-events:none;opacity:0;transform:translate(-50%,-50%) scale(.7);transition:opacity .15s,transform .15s;border:3px solid #252525;border-radius:50%;background:radial-gradient(circle,#fff 0 14%,#252525 16% 25%,transparent 27%),linear-gradient(#ef3f5c 0 47%,#252525 48% 54%,#fff 55%);box-shadow:0 0 12px rgba(255,255,255,.8)}.cursor-pokeball.visible{opacity:1;transform:translate(-50%,-50%) scale(1)}.caught-pokemon.dodging{animation:wild-dodge .42s ease-in-out infinite!important}';
 document.head.appendChild(cursorStyles);
@@ -60,6 +64,9 @@ document.head.appendChild(captureStyles);
 const taskImageStyles = document.createElement('style');
 taskImageStyles.textContent = '.completion-image-button{position:relative;padding:5px 8px;border:1px solid rgba(45,226,230,.45);border-radius:8px;color:#b7f9ff;font-size:.72rem;background:rgba(45,226,230,.08);cursor:pointer}.completion-image-input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}.completion-image-preview{width:38px;height:38px;object-fit:cover;border:1px solid #ffe66d;border-radius:8px}';
 document.head.appendChild(taskImageStyles);
+const imagePreviewStyles = document.createElement('style');
+imagePreviewStyles.textContent = '.completion-image-preview{cursor:zoom-in}.completion-image-preview:focus-visible{outline:2px solid #fff;outline-offset:2px}.image-preview-modal[hidden]{display:none}.image-preview-modal{position:fixed;z-index:30;inset:0;display:grid;place-items:center;padding:28px;background:rgba(2,5,15,.88);backdrop-filter:blur(7px)}.image-preview-modal img{max-width:min(92vw,850px);max-height:85vh;border:3px solid #ffe66d;border-radius:14px;box-shadow:0 0 35px rgba(255,230,109,.4)}.close-image-preview{position:fixed;top:18px;right:22px;width:42px;height:42px;border:0;border-radius:50%;color:#fff;font-size:1.8rem;background:rgba(255,255,255,.18);cursor:pointer}';
+document.head.appendChild(imagePreviewStyles);
 
 let tasks = loadTasks();
 let completionDays = loadDays();
@@ -161,7 +168,7 @@ function renderTasks() {
   updateDashboard();
 }
 function createTaskElement(task) {
-  const item = document.createElement('li'), handle = document.createElement('span'), checkbox = document.createElement('input'), text = document.createElement('span'), badge = document.createElement('span'), timer = document.createElement('div'), edit = document.createElement('button'), remove = document.createElement('button'), imageUpload = document.createElement('input'), imageButton = document.createElement('label'), imagePreview = document.createElement('img');
+  const item = document.createElement('li'), handle = document.createElement('span'), checkbox = document.createElement('input'), text = document.createElement('span'), badge = document.createElement('span'), timer = document.createElement('div'), edit = document.createElement('button'), remove = document.createElement('button'), imageUpload = document.createElement('input'), imageButton = document.createElement('label'), cameraUpload = document.createElement('input'), cameraButton = document.createElement('label'), imagePreview = document.createElement('img');
   item.className = `task-item${task.completed ? ' completed' : ''}`; item.draggable = true; item.dataset.id = task.id;
   item.addEventListener('dragstart', onDragStart); item.addEventListener('dragover', event => event.preventDefault()); item.addEventListener('drop', onDrop); item.addEventListener('dragend', () => item.classList.remove('dragging'));
   handle.className = 'drag-handle'; handle.textContent = '⋮⋮'; handle.title = 'Arrastra para ordenar';
@@ -171,8 +178,8 @@ function createTaskElement(task) {
   if (task.remainingSeconds !== null) { timer.className = 'task-timer'; timer.innerHTML = `<span class="timer-value">${formatTime(remainingFor(task))}</span>`; const button = document.createElement('button'); button.type = 'button'; button.className = 'timer-button'; button.textContent = task.timerRunning ? 'Pausa' : remainingFor(task) ? 'Iniciar' : 'Finalizó'; button.disabled = !remainingFor(task); button.addEventListener('click', () => toggleTimer(task.id)); timer.appendChild(button); }
   edit.className = 'task-edit'; edit.type = 'button'; edit.textContent = '✎'; edit.title = 'Editar tarea'; edit.addEventListener('click', () => editTask(task.id));
   remove.className = 'task-delete'; remove.type = 'button'; remove.textContent = '×'; remove.title = 'Eliminar tarea'; remove.addEventListener('click', () => deleteTask(task.id, item));
-  if (task.completed) { imageUpload.type = 'file'; imageUpload.accept = 'image/*'; imageUpload.className = 'completion-image-input'; imageUpload.setAttribute('aria-label', `Subir imagen de ${task.text}`); imageUpload.addEventListener('change', () => saveCompletionImage(task.id, imageUpload.files?.[0])); imageButton.className = 'completion-image-button'; imageButton.title = 'Subir imagen de tarea completada'; imageButton.textContent = task.completionImage ? 'Cambiar imagen' : 'Subir imagen'; imageButton.appendChild(imageUpload); if (task.completionImage) { imagePreview.className = 'completion-image-preview'; imagePreview.src = task.completionImage; imagePreview.alt = `Imagen de tarea completada: ${task.text}`; } }
-  item.append(handle, checkbox, text, badge, timer, imageButton, imagePreview, edit, remove); return item;
+  if (task.completed) { imageUpload.type = 'file'; imageUpload.accept = 'image/*'; imageUpload.className = 'completion-image-input'; imageUpload.setAttribute('aria-label', `Subir imagen de ${task.text}`); imageUpload.addEventListener('change', () => saveCompletionImage(task.id, imageUpload.files?.[0])); imageButton.className = 'completion-image-button'; imageButton.title = 'Subir imagen de tarea completada'; imageButton.textContent = task.completionImage ? 'Cambiar imagen' : 'Subir imagen'; imageButton.appendChild(imageUpload); cameraUpload.type = 'file'; cameraUpload.accept = 'image/*'; cameraUpload.capture = 'environment'; cameraUpload.className = 'completion-image-input'; cameraUpload.setAttribute('aria-label', `Tomar foto de ${task.text}`); cameraUpload.addEventListener('change', () => saveCompletionImage(task.id, cameraUpload.files?.[0])); cameraButton.className = 'completion-image-button camera-button'; cameraButton.title = 'Tomar foto con cámara'; cameraButton.textContent = 'Tomar foto'; cameraButton.appendChild(cameraUpload); if (task.completionImage) { imagePreview.className = 'completion-image-preview'; imagePreview.src = task.completionImage; imagePreview.alt = `Ver imagen de tarea completada: ${task.text}`; imagePreview.tabIndex = 0; imagePreview.setAttribute('role', 'button'); imagePreview.addEventListener('click', () => showImagePreview(task.completionImage, task.text)); imagePreview.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); showImagePreview(task.completionImage, task.text); } }); } }
+  item.append(handle, checkbox, text, badge, timer, imageButton, cameraButton, imagePreview, edit, remove); return item;
 }
 function onDragStart(event) { draggedId = event.currentTarget.dataset.id; event.currentTarget.classList.add('dragging'); event.dataTransfer.effectAllowed = 'move'; }
 function onDrop(event) { event.preventDefault(); const targetId = event.currentTarget.dataset.id; if (!draggedId || draggedId === targetId) return; const from = tasks.findIndex(t => t.id === draggedId), to = tasks.findIndex(t => t.id === targetId); tasks.splice(to, 0, tasks.splice(from, 1)[0]); saveTasks(); renderTasks(); }
@@ -192,6 +199,8 @@ function lastSevenDays() { return Array.from({ length: 7 }, (_, i) => { const da
 function countWeekCompletions() { const keys = new Set(lastSevenDays().map(dayKey)); return completionDays.filter(d => keys.has(d)).length; }
 function getStreak() { const dates = new Set(completionDays); let count = 0; for (let i = 0; i < 365; i++) { const date = new Date(); date.setDate(date.getDate() - i); if (dates.has(dayKey(date))) count++; else break; } return count; }
 function renderWeeklyChart() { weeklyChart.replaceChildren(); const completed = new Set(completionDays), labels = ['D', 'L', 'M', 'X', 'J', 'V', 'S']; lastSevenDays().forEach(date => { const isDone = completed.has(dayKey(date)), column = document.createElement('div'); column.className = 'chart-column'; column.innerHTML = `<span class="chart-value">${isDone ? '✓' : ''}</span><span class="chart-bar ${isDone ? 'active' : ''}" style="height:${isDone ? 100 : 18}%"></span><small>${labels[date.getDay()]}</small>`; weeklyChart.appendChild(column); }); }
+function showImagePreview(source, taskText) { const image = imagePreviewModal.querySelector('img'); image.src = source; image.alt = `Vista previa: ${taskText}`; imagePreviewModal.hidden = false; imagePreviewModal.querySelector('button').focus(); }
+function closeImagePreview() { imagePreviewModal.hidden = true; }
 function saveCompletionImage(id, file) {
   if (!file?.type.startsWith('image/')) return;
   const reader = new FileReader();
@@ -250,4 +259,7 @@ successModal.addEventListener('mousemove', event => {
 successModal.addEventListener('mouseleave', () => { cursorPokeball.classList.remove('visible'); wildPokemon.classList.remove('dodging'); });
 document.addEventListener('pointerdown', playIntroJingle, { once: true });
 musicButton.addEventListener('click', startBackgroundMusic);
+imagePreviewModal.querySelector('button').addEventListener('click', closeImagePreview);
+imagePreviewModal.addEventListener('click', event => { if (event.target === imagePreviewModal) closeImagePreview(); });
+document.addEventListener('keydown', event => { if (event.key === 'Escape' && !imagePreviewModal.hidden) closeImagePreview(); });
 createShootingStars(); createParticles(); renderTasks(); updateCaptureCounter(); setInterval(tickTimers, 1000);
